@@ -1,0 +1,169 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum PlanType {
+  FREE
+  BASIC
+  PRO
+  PREMIUM
+}
+
+enum UserStatus {
+  ACTIVE
+  FROZEN
+  BANNED
+}
+
+enum ScopeLevel {
+  INTERNATIONAL
+  NATIONAL
+  STATE
+  REGIONAL
+  MUNICIPAL
+  NEIGHBORHOOD
+}
+
+enum SummaryPreference {
+  SHORT_ALERT
+  MEDIUM_BULLET
+  DETAILED_READING
+}
+
+enum DeliveryStyle {
+  CONSOLIDATED_BULLETIN
+  SEPARATED_BY_CATEGORY
+}
+
+model User {
+  id                   String      @id @default(uuid())
+  email                String?     @unique
+  phone_number         String?     @unique
+  telegram_id          String?     @unique
+  name                 String?
+  status               UserStatus  @default(ACTIVE)
+  plan_type            PlanType    @default(FREE)
+  payment_customer_id  String?
+  created_at           DateTime    @default(now())
+  updated_at           DateTime    @updatedAt
+
+  preferences          UserDeliveryPreferences?
+  locations            UserLocation[]
+  delivery_logs        ContentDeliveryLog[]
+  delivery_queue       DeliveryQueue[]
+}
+
+model UserDeliveryPreferences {
+  id                        String             @id @default(uuid())
+  user_id                   String             @unique
+  summary_preference        SummaryPreference  @default(MEDIUM_BULLET)
+  delivery_style            DeliveryStyle      @default(CONSOLIDATED_BULLETIN)
+  preferred_delivery_times  String[]           // Format: ["08:00", "20:00"]
+  political_bias            String?            // ex: "center", "left", "right"
+  
+  user                      User               @relation(fields: [user_id], references: [id])
+}
+
+model UserLocation {
+  id                 String      @id @default(uuid())
+  user_id            String
+  label              String      // ex: "Casa", "Trabalho"
+  location_name      String      // ex: "São Paulo", "Vila Madalena"
+  scope_level        ScopeLevel
+  active_days        Int[]       // [1, 2, 3, 4, 5] = Mon-Fri
+  active_times_start String?     // HH:mm
+  active_times_end   String?     // HH:mm
+
+  user               User        @relation(fields: [user_id], references: [id])
+}
+
+model SystemPrompt {
+  id                  String   @id @default(uuid())
+  name                String   @unique
+  prompt_text         String
+  ai_provider         String   // openai, gemini, ollama
+  ai_model            String
+  temperature         Float    @default(0.7)
+  version             Int      @default(1)
+  created_at          DateTime @default(now())
+  updated_at          DateTime @updatedAt
+}
+
+model InformationSource {
+  id                         String             @id @default(uuid())
+  name                       String
+  url                        String
+  source_type                String             // rss, html_scrape, api
+  scraper_config             Json?              // CSS selectors, etc.
+  scraping_interval_minutes  Int                @default(60)
+  status                     String             @default("active")
+  last_scraped_at            DateTime?
+  contents                   ProcessedContent[]
+}
+
+model ProcessedContent {
+  id                 String             @id @default(uuid())
+  source_id          String
+  original_url       String             @unique
+  title              String
+  category           String
+  scope_level        ScopeLevel
+  political_bias     String?
+  summary_short      String
+  summary_medium     String
+  summary_long       String
+  is_realtime_alert  Boolean            @default(false)
+  created_at         DateTime           @default(now())
+
+  source             InformationSource  @relation(fields: [source_id], references: [id])
+  tags               ContentTag[]
+  queue_items        DeliveryQueue[]
+  delivery_logs      ContentDeliveryLog[]
+}
+
+model ContentTag {
+  id          String           @id @default(uuid())
+  content_id  String
+  tag_name    String
+
+  content     ProcessedContent @relation(fields: [content_id], references: [id])
+}
+
+model DeliveryQueue {
+  id            String           @id @default(uuid())
+  user_id       String
+  content_id    String
+  status        String           @default("pending") // pending, sent
+  scheduled_for DateTime
+
+  user          User             @relation(fields: [user_id], references: [id])
+  content       ProcessedContent @relation(fields: [content_id], references: [id])
+}
+
+model ContentDeliveryLog {
+  id            String           @id @default(uuid())
+  user_id       String
+  content_id    String
+  delivered_at  DateTime         @default(now())
+
+  user          User             @relation(fields: [user_id], references: [id])
+  content       ProcessedContent @relation(fields: [content_id], references: [id])
+}
+
+model MarketingCampaign {
+  id               String   @id @default(uuid())
+  name             String
+  objective        String
+  target_audience  Json
+  message_template String
+  status           String   @default("active")
+  created_at       DateTime @default(now())
+}
