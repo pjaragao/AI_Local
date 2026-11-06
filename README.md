@@ -1,76 +1,67 @@
-# AI Local - Assistant Project
+<div align="center">
 
-Broadly focused AI Assistant project consisting of a backend service and a web interface.
+# 🧠 AI Local: assistant backend + web UI
 
-## Project Structure
+### A self-hostable AI assistant platform: Node/TypeScript API, React frontend, Postgres, Redis and Supabase services
 
-- **`/assistant_backend`**: Node.js backend using Prisma ORM, TypeScript, and Docker.
-- **`/assistant_backend/assistant_web`**: Frontend application built with React, Vite, and tailwindcss.
+![Node](https://img.shields.io/badge/Node.js-18%2B-339933?logo=nodedotjs&logoColor=white)
+![TypeScript](https://img.shields.io/badge/TypeScript-3178C6?logo=typescript&logoColor=white)
+![Prisma](https://img.shields.io/badge/Prisma-ORM-2D3748?logo=prisma&logoColor=white)
+![React](https://img.shields.io/badge/React-Vite%20%2B%20Tailwind-61DAFB?logo=react&logoColor=black)
+![Docker](https://img.shields.io/badge/Docker-compose-2496ED?logo=docker&logoColor=white)
 
-## Getting Started
+</div>
 
-### Prerequisites
+---
 
-- Node.js (v18+)
-- npm or yarn
-- Docker (for database services)
+## What is it?
 
-### Installation
+A broadly scoped AI assistant project made of a **backend service** and a **web interface**, packaged so the whole stack runs
+locally with one command. For WhatsApp-based agents see [lolo-bot](https://github.com/pjaragao/lolo-bot) and
+[mr-irrelevant](https://github.com/pjaragao/mr-irrelevant).
 
-1. Clone the repository:
-   ```bash
-   git clone https://github.com/pjaragao/AI_Local.git
-   cd AI_Local
-   ```
+## 🏗️ Architecture
 
-2. Setup Backend:
-   ```bash
-   cd assistant_backend
-   npm install
-   cp .env.example .env
-   # Update .env with your credentials
-   npx prisma generate
-   ```
+```mermaid
+flowchart LR
+    W[React + Vite + Tailwind<br/>assistant_web] --> B[Node.js / TypeScript API<br/>Prisma ORM]
+    B --> DB[(PostgreSQL<br/>Supabase-compatible)]
+    B --> R[(Redis<br/>queues)]
+    B --> S[Supabase services<br/>Kong · Auth · PostgREST]
+```
 
-3. Setup Frontend:
-   ```bash
-   cd assistant_web
-   npm install
-   npm run dev
-   ```
+```text
+assistant_backend/                Node.js + TypeScript backend (Prisma, Docker)
+assistant_backend/assistant_web/  React + Vite + Tailwind frontend
+docker-compose.yml                backend, frontend, Postgres, Redis, Supabase services
+```
 
-## Development
+## 🚀 Getting started
 
-- **Backend**: `npm run dev` inside `assistant_backend`.
-- **Frontend**: `npm run dev` inside `assistant_backend/assistant_web`.
+Prerequisites: Node.js 18+, npm, Docker.
 
-## Docker Support
+```bash
+git clone https://github.com/pjaragao/AI_Local.git && cd AI_Local
 
-This project is ready to run with Docker Compose. The setup includes:
-- Backend (Node.js)
-- Frontend (React/Vite)
-- Database (PostgreSQL/Supabase compatible)
-- Redis (Queue management)
-- Supabase Services (Kong Gateway, Auth, PostgREST)
+# backend
+cd assistant_backend && npm install
+cp .env.example .env && npx prisma generate
+npm run dev
 
-### Running with Docker
+# frontend (another terminal)
+cd assistant_backend/assistant_web && npm install && npm run dev
+```
 
-1. Ensure you have Docker and Docker Compose installed.
-2. Run the application:
-   ```bash
-   docker-compose up --build
-   ```
-3. Access the applications:
-   - Frontend: [http://localhost:80](http://localhost:80)
-   - Backend API: [http://localhost:3000](http://localhost:3000)
-   - Supabase Gateway: [http://localhost:8000](http://localhost:8000)
+Everything at once with Docker Compose:
 
-## Features
+```bash
+docker compose up -d --build
+```
 
-- Artificial Intelligence integration.
-- Responsive Web Dashboard.
-- Scalable backend architecture.
+---
 
-## License
+<div align="center">
 
-MIT
+Built by **Paulo Aragão Jr** · [GitHub](https://github.com/pjaragao)
+
+</div>
